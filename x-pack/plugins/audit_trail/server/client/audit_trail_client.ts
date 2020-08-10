@@ -4,8 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import { Subject } from 'rxjs';
-import { KibanaRequest, Auditor, AuditableEvent } from 'src/core/server';
-import { AuditEvent } from '../types';
+import { KibanaRequest, Auditor, AuditEvent, AuditEventDecorator } from 'src/core/server';
 
 import { SecurityPluginSetup } from '../../../security/server';
 import { SpacesPluginSetup } from '../../../spaces/server';
@@ -30,17 +29,22 @@ export class AuditTrailClient implements Auditor {
     this.scope = name;
   }
 
-  public add(event: AuditableEvent) {
+  public add<Args>(decorateEvent: AuditEventDecorator<Args>, args: Args) {
     const user = this.deps.getCurrentUser(this.request);
-    // doesn't use getSpace since it's async operation calling ES
-    const spaceId = this.deps.getSpaceId ? this.deps.getSpaceId(this.request) : undefined;
+    const spaceId = this.deps.getSpaceId?.(this.request);
 
-    this.event$.next({
-      message: event.message,
-      type: event.type,
-      user: user?.username,
-      space: spaceId,
-      scope: this.scope,
-    });
+    const event = decorateEvent(
+      {
+        user: {
+          name: user?.username!,
+        },
+        trace: {
+          id: 'abc', // TODO: Use `request.id` once https://github.com/elastic/kibana/pull/71019 is merged
+        },
+      },
+      args
+    );
+
+    this.event$.next(event);
   }
 }

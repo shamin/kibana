@@ -66,12 +66,12 @@ export class LegacyScopedClusterClient implements ILegacyScopedClusterClient {
     clientParams: Record<string, any> = {},
     options?: LegacyCallAPIOptions
   ) {
-    if (this.auditor) {
-      this.auditor.add({
-        message: endpoint,
-        type: 'elasticsearch.call.internalUser',
-      });
-    }
+    // if (this.auditor) {
+    //   this.auditor.add({
+    //     message: endpoint,
+    //     type: 'elasticsearch.call.internalUser',
+    //   });
+    // }
 
     return this.internalAPICaller(endpoint, clientParams, options);
   }
@@ -105,12 +105,12 @@ export class LegacyScopedClusterClient implements ILegacyScopedClusterClient {
       clientParams.headers = Object.assign({}, clientParams.headers, this.headers);
     }
 
-    if (this.auditor) {
-      this.auditor.add({
-        message: endpoint,
-        type: 'elasticsearch.call.currentUser',
-      });
-    }
+    // if (this.auditor) {
+    //   this.auditor.add({
+    //     message: endpoint,
+    //     type: 'elasticsearch.call.currentUser',
+    //   });
+    // }
 
     return this.scopedAPICaller(endpoint, clientParams, options);
   }
